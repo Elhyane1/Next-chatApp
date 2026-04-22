@@ -21,5 +21,7 @@ export async function POST(req: Request) {
         },
     });
 
-    return Response.json(user);
+    const userWithoutPAssword = {email, name}
+
+    return Response.json(userWithoutPAssword);
 }
