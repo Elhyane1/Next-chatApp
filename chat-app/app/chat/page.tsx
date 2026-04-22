@@ -1,12 +1,22 @@
 'use client'
 import { useState } from "react";
-import Sidebar from "@/components/Sidebar";
-import ChatBox from "@/components/Chatbox";
-import Input from "@/components/Input";
+import Sidebar from "./_components/Sidebar";
+import ChatBox from "./_components/ChatBox";
+import Input from "./_components/Input";
+// import { signOut } from "next-auth/react";
+// import { getServerSession } from "next-auth";
+// import { authOptions } from "@/lib/auth";
+// import { redirect } from "next/navigation";
 
 export default function ChatPage() {
 
- const [activeChat, setActiveChat] = useState('alex-chen');
+  // const session = await getServerSession(authOptions);
+
+  // if (!session) {
+  //   redirect("/login");
+  // }
+
+  const [activeChat, setActiveChat] = useState('alex-chen');
   const [messages, setMessages] = useState([
     { id: 1, sender: 'alex-chen', text: "yo! did you see that new design?", time: "2:34 PM", isMine: false },
     { id: 2, sender: 'me', text: "yeah it's wild! love the brutalist vibes", time: "2:35 PM", isMine: true },
@@ -30,9 +40,9 @@ export default function ChatPage() {
     <div className="size-full flex relative overflow-hidden">
       {/* Grain texture overlay */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-overlay"
-           style={{
-             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-           }}
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3.5' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        }}
       />
 
       <Sidebar activeChat={activeChat} onSelectChat={setActiveChat} />

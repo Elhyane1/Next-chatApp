@@ -3,6 +3,7 @@ import { useState } from 'react';
 // import { Link, useNavigate } from 'react-router';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+// import Email from 'next-auth/providers/email';
 
 export default function Register() {
     const route = useRouter();
@@ -13,11 +14,19 @@ export default function Register() {
         confirmPassword: '',
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async(e: React.FormEvent) => {
         e.preventDefault();
         // Mock registration - in real app, create account
         if (formData.password === formData.confirmPassword) {
-            route.replace('/chat');
+            const email = formData.email
+            const password = formData.password
+            const name = formData.name
+            await fetch("/api/register", {
+    method: "POST",
+    body: JSON.stringify({ email, password, name })
+  });
+
+            route.replace('/login');
         }
     };
 
@@ -181,7 +190,7 @@ export default function Register() {
                         </button>
 
                         {/* Divider */}
-                        <div className="relative">
+                        {/* <div className="relative">
                             <div className="absolute inset-0 flex items-center">
                                 <div className="w-full border-t-2 border-border" />
                             </div>
@@ -190,10 +199,10 @@ export default function Register() {
                                     OR
                                 </span>
                             </div>
-                        </div>
+                        </div> */}
 
                         {/* Social Registration Buttons */}
-                        <div className="space-y-3">
+                        {/* <div className="space-y-3">
                             <button
                                 type="button"
                                 className="w-full bg-card text-foreground py-3 border-2 border-border shadow-[4px_4px_0_0_rgba(0,0,0,0.4)] hover:shadow-[6px_6px_0_0_rgba(0,0,0,0.5)] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all flex items-center justify-center gap-3"
@@ -210,7 +219,7 @@ export default function Register() {
                                 <span className="text-xl">⚫</span>
                                 Sign up with GitHub
                             </button>
-                        </div>
+                        </div> */}
                     </form>
 
                     {/* Footer */}

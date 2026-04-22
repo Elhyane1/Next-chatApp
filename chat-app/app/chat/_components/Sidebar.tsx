@@ -1,21 +1,5 @@
-// export default function Sidebar() {
-//     return (
-//         <div className="w-1/4 bg-gray-900 text-white p-4">
-//             <h2 className="text-xl font-bold mb-4">Chats</h2>
-
-//             <div className="space-y-2">
-//                 <div className="p-2 bg-gray-800 rounded cursor-pointer">
-//                     John Doe
-//                 </div>
-//                 <div className="p-2 hover:bg-gray-800 rounded cursor-pointer">
-//                     Jane Smith
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// }
-
 import { useState, useRef, useEffect } from 'react';
+import { signOut } from 'next-auth/react';
 
 interface Contact {
     id: string;
@@ -248,7 +232,7 @@ export default function Sidebar({ activeChat, onSelectChat }: SidebarProps) {
                             <span className="text-xl">🌙</span>
                             <span style={{ fontFamily: 'var(--font-body)' }} className="font-bold text-sm">Preferences</span>
                         </button>
-                        <button className="w-full px-4 py-3 text-left hover:bg-destructive hover:text-destructive-foreground transition-colors flex items-center gap-3 group">
+                        <button onClick={() => signOut({ callbackUrl: '/login' })} className="w-full px-4 py-3 text-left hover:bg-destructive hover:text-destructive-foreground transition-colors flex items-center gap-3 group">
                             <span className="text-xl">🚪</span>
                             <span style={{ fontFamily: 'var(--font-body)' }} className="font-bold text-sm">Sign Out</span>
                         </button>

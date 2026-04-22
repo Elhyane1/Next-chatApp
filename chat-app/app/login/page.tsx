@@ -2,19 +2,27 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { signIn } from 'next-auth/react';
 
 export default function Login() {
     // const navigate = useNavigate();
-    const router = useRouter()
+    // const router = useRouter()
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         // Mock authentication - in real app, verify credentials
 
-        // Well we may have to change that after implimenting authentication (i think we should use redirect)
-        router.replace('/chat');
+        await signIn("credentials", {
+            email,
+            password,
+            redirect: true,
+            callbackUrl: "/chat",
+        });
+
+        // Well, we may have to change that after implimenting authentication (i think we should use redirect)
+        // router.replace('/chat');
     };
 
     return (

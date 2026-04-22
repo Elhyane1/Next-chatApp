@@ -1,14 +1,5 @@
 // import Message from "./Message";
 
-// export default function ChatBox() {
-//     return (
-//         <div className="flex-1 p-4 overflow-y-auto bg-gray-100 space-y-2">
-//             <Message content="Hello!" />
-//             <Message content="Hi, how are you?" isOwn />
-//             <Message content="I'm good, thanks!" />
-//         </div>
-//     );
-// }
 
 import { useEffect, useRef } from 'react';
 

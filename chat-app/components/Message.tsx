@@ -1,9 +1,13 @@
+'use client'
+import { useState } from "react";
+
 type Props = {
     content: string;
     isOwn?: boolean;
 };
 
 export default function Message({ content, isOwn }: Props) {
+
     return (
         <div className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
             <div
