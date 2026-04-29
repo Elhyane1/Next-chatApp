@@ -1,3 +1,5 @@
+// whenever you change this file run : npx prisma generate / npx prisma db push 
+
 generator client {
   provider = "prisma-client-js"
   // output   = "../lib/generated/prisma"
@@ -8,9 +10,71 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================
+// USER
+// ============================================
 model User {
   id       String @id @default(auto()) @map("_id") @db.ObjectId
   email    String @unique
   password String
   name     String?
+  status        Status    @default(OFFLINE)
+  lastSeen      DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+// Relations
+  messages      Message[]
+  roomsAsUserA  Room[]    @relation("RoomUserA")
+  roomsAsUserB  Room[]    @relation("RoomUserB")
+
+  @@map("users")
 }
+
+enum Status {
+  ONLINE
+  AWAY
+  OFFLINE
+  IN_CALL
+}
+
+
+// ============================================
+// ROOM (1-on-1 conversation between exactly 2 users)
+// ============================================
+model Room {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Exactly 2 participants
+  userAId     String    @db.ObjectId
+  userA       User      @relation("RoomUserA", fields: [userAId], references: [id])
+  userBId     String    @db.ObjectId
+  userB       User      @relation("RoomUserB", fields: [userBId], references: [id])
+
+  // Relations
+  messages    Message[]
+
+  @@unique([userAId, userBId])
+  @@map("rooms")
+}
+
+
+// ============================================
+// MESSAGE
+// ============================================
+model Message {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  content   String
+  createdAt DateTime @default(now())
+
+  senderId  String   @db.ObjectId
+  sender    User     @relation(fields: [senderId], references: [id])
+  roomId    String   @db.ObjectId
+  room      Room     @relation(fields: [roomId], references: [id])
+
+  @@index([roomId, createdAt])
+  @@map("messages")
+}
+

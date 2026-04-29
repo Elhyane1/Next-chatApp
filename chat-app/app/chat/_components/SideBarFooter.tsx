@@ -1,6 +1,8 @@
 'use client'
 import { useState, useRef, useEffect, Dispatch, SetStateAction } from "react";
+import { User } from "@prisma/client";
 import { signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 interface Contact {
     id: string;
@@ -18,7 +20,7 @@ interface Contact {
 interface SideBarFooterProps {
     initials: (name: string) => string;
     avatarColor : (id: string) => string;
-    contacts: Contact[];
+    contacts: User[];
     selectedContactInfo: Contact|null;
     setSelectedContactInfo: Dispatch<SetStateAction<Contact|null>>
 }
@@ -28,6 +30,8 @@ export default function SideBarFooter({ initials, avatarColor, contacts, selecte
     // const [selectedContactInfo, setSelectedContactInfo] = useState<Contact | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
+    const { data: session } = useSession();
+    
 
 
         useEffect(() => {
@@ -59,7 +63,7 @@ export default function SideBarFooter({ initials, avatarColor, contacts, selecte
                         </span>
                     </div>
                     <div className="flex-1 text-left">
-                        <p className="font-bold text-sm" style={{ fontFamily: 'var(--font-body)' }}>Morgan Rivera</p>
+                        <p className="font-bold text-sm" style={{ fontFamily: 'var(--font-body)' }}>{session?.user.name}</p>
                         <p className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>online</p>
                     </div>
                     <span className={`text-primary text-xl transition-transform ${isMenuOpen ? 'rotate-180' : ''}`}>

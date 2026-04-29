@@ -38,6 +38,15 @@ export const authOptions: NextAuthOptions = {
         }),
     ],
 
+    callbacks: {
+    async session({ session, token }) {
+      if (session.user && token.sub) {
+        session.user.id = token.sub; // token.sub usually contains the user ID
+      }
+      return session;
+    },
+  },
+
     session: {
         strategy: "jwt",
     },
@@ -45,6 +54,18 @@ export const authOptions: NextAuthOptions = {
     pages: {
         signIn: "/login",
     },
+
+    cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: false, // 👈 force false for local HTTP
+      },
+    },
+  },
 
     secret: process.env.NEXTAUTH_SECRET,
 }

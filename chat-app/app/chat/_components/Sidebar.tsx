@@ -2,76 +2,111 @@
 import { useState, useRef, useEffect } from 'react';
 import SideBarSearch from './SideBarSearch';
 import SideBarFooter from './SideBarFooter';
+import { useSession } from "next-auth/react";
+import { User, Room } from "@/types"
+import { getContacts, getOrCreateRoom } from '@/lib/api';
 
-interface Contact {
-    id: string;
-    name: string;
-    status: string;
-    lastMessage: string;
-    time: string;
-    unread?: number;
-    avatar?: string;
-    email?: string;
-    phone?: string;
-    bio?: string;
+// interface Contact {
+//     id: string;
+//     name: string;
+//     status: string;
+//     lastMessage: string;
+//     time: string;
+//     unread?: number;
+//     avatar?: string;
+//     email?: string;
+//     phone?: string;
+//     bio?: string;
+// }
+
+
+// const contacts: Contact[] = [
+//     {
+//         id: 'alex-chen',
+//         name: 'Alex Chen',
+//         status: 'online',
+//         lastMessage: 'want to collaborate on something similar?',
+//         time: '2:37 PM',
+//         email: 'alex.chen@design.co',
+//         phone: '+1 (555) 123-4567',
+//         bio: 'Product designer at Studio XYZ. Love brutalist design and experimental interfaces.'
+//     },
+//     {
+//         id: 'maria-santos',
+//         name: 'Maria Santos',
+//         status: 'away',
+//         lastMessage: 'sent you the files!',
+//         time: '1:15 PM',
+//         unread: 2,
+//         email: 'maria.s@creative.io',
+//         phone: '+1 (555) 234-5678',
+//         bio: 'Frontend developer & UI enthusiast. Always experimenting with new CSS tricks.'
+//     },
+//     {
+//         id: 'design-squad',
+//         name: 'Design Squad',
+//         status: 'online',
+//         lastMessage: 'Jamie: let\'s sync tomorrow',
+//         time: '12:03 PM',
+//         bio: 'Team chat for design projects and creative collaboration. 12 members online.'
+//     },
+//     {
+//         id: 'kai-nakamura',
+//         name: 'Kai Nakamura',
+//         status: 'offline',
+//         lastMessage: 'thanks for the feedback',
+//         time: 'Yesterday',
+//         email: 'kai.nak@studio.com',
+//         bio: 'Creative director focused on bold, unconventional digital experiences.'
+//     },
+//     {
+//         id: 'dev-team',
+//         name: 'Dev Team',
+//         status: 'online',
+//         lastMessage: 'merge request approved',
+//         time: 'Yesterday',
+//         unread: 5,
+//         bio: 'Development team workspace. 8 active members.'
+//     },
+// ];
+
+interface SidebarProps {
+  onSelectRoom: (room: Room) => void;
+  activeRoomId?: string;
 }
 
 
-const contacts: Contact[] = [
-    {
-        id: 'alex-chen',
-        name: 'Alex Chen',
-        status: 'online',
-        lastMessage: 'want to collaborate on something similar?',
-        time: '2:37 PM',
-        email: 'alex.chen@design.co',
-        phone: '+1 (555) 123-4567',
-        bio: 'Product designer at Studio XYZ. Love brutalist design and experimental interfaces.'
-    },
-    {
-        id: 'maria-santos',
-        name: 'Maria Santos',
-        status: 'away',
-        lastMessage: 'sent you the files!',
-        time: '1:15 PM',
-        unread: 2,
-        email: 'maria.s@creative.io',
-        phone: '+1 (555) 234-5678',
-        bio: 'Frontend developer & UI enthusiast. Always experimenting with new CSS tricks.'
-    },
-    {
-        id: 'design-squad',
-        name: 'Design Squad',
-        status: 'online',
-        lastMessage: 'Jamie: let\'s sync tomorrow',
-        time: '12:03 PM',
-        bio: 'Team chat for design projects and creative collaboration. 12 members online.'
-    },
-    {
-        id: 'kai-nakamura',
-        name: 'Kai Nakamura',
-        status: 'offline',
-        lastMessage: 'thanks for the feedback',
-        time: 'Yesterday',
-        email: 'kai.nak@studio.com',
-        bio: 'Creative director focused on bold, unconventional digital experiences.'
-    },
-    {
-        id: 'dev-team',
-        name: 'Dev Team',
-        status: 'online',
-        lastMessage: 'merge request approved',
-        time: 'Yesterday',
-        unread: 5,
-        bio: 'Development team workspace. 8 active members.'
-    },
-];
-
-export default function Sidebar() {
+export default function Sidebar({ onSelectRoom, activeRoomId }: SidebarProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [selectedContactInfo, setSelectedContactInfo] = useState<Contact | null>(null);
-    const [activeChat, setActiveChat] = useState('alex-chen');
+    const [contacts, setContacts] = useState<User[]>([])
+    const [selectedContactInfo, setSelectedContactInfo] = useState<User | null>(null);
+    const [activeChat, setActiveChat] = useState('');
+    const [loading, setLoading] = useState(true);
+
     const menuRef = useRef<HTMLDivElement>(null);
+
+    const {data: session} = useSession()
+
+    useEffect(() => {
+    getContacts()
+      .then(setContacts)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleContactClick = async (contact: User) => {
+    try {
+      const room = await getOrCreateRoom(contact.id);
+      onSelectRoom(room);
+    } catch (err) {
+      console.error("Failed to open chat:", err);
+    }
+  };
+
+  const getOtherUser = (room: Room) => {
+    return room.userA.id === session?.user?.id ? room.userB : room.userA;
+  };
+
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -90,21 +125,15 @@ export default function Sidebar() {
     }, [isMenuOpen]);
 
 
-    // Get the fiest letter of contact's name 
-    const getInitials = (name: string) => {
-        return name
-            .split(' ')
-            .map(word => word[0])
-            .join('')
-            .toUpperCase()
-            .slice(0, 2);
-    };
+    
 
     const getAvatarColor = (id: string) => {
         const colors = ['#d97626', '#ff9d3d', '#ffb347', '#b8621b'];
         const index = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length;
         return colors[index];
     };
+
+    if (loading) return <div className="p-4 text-gray-500">Loading contacts...</div>;
 
     return (
         <aside className="w-80 bg-sidebar border-r-4 border-border flex flex-col">
@@ -127,6 +156,7 @@ export default function Sidebar() {
                 {contacts.map((contact) => (
                     <div
                         key={contact.id}
+                        onClick={() => handleContactClick(contact)}
                         className={`w-full p-4 border-b-2 border-border transition-all hover:bg-muted relative group
               ${activeChat === contact.id ? 'bg-card shadow-[8px_8px_0_0_rgba(255,157,61,0.3)]' : ''}`}
                     >
@@ -153,10 +183,10 @@ export default function Sidebar() {
                                     </span>
                                 )}
                                 {/* Status indicator on avatar */}
-                                <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-background ${contact.status === 'online' ? 'bg-primary' :
+                                {/* <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-background ${contact.status === 'online' ? 'bg-primary' :
                                         contact.status === 'away' ? 'bg-secondary' :
                                             'bg-muted-foreground'
-                                    }`} />
+                                    }`} /> */}
                             </button>
 
                             {/* Contact Info - Clickable */}
@@ -168,9 +198,9 @@ export default function Sidebar() {
                                     <span className="font-bold text-foreground" style={{ fontFamily: 'var(--font-body)' }}>
                                         {contact.name}
                                     </span>
-                                    <span className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
+                                    {/* <span className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
                                         {contact.time}
-                                    </span>
+                                    </span> */}
                                 </div>
 
                                 <p className="text-sm text-muted-foreground truncate mb-1">
@@ -196,3 +226,14 @@ export default function Sidebar() {
         </aside>
     );
 }
+
+
+// Get the fiest letter of contact's name 
+    export const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map(word => word[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    };
